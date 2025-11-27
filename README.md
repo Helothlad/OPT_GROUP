@@ -1,1 +1,34 @@
-Ecological Habitat & Corridor Optimization EngineProject OverviewThis project implements a spatial optimization pipeline designed to automate the expansion of animal habitats and the generation of ecological corridors. By integrating geospatial data processing with Mixed Integer Programming (MIP), the model balances conservation urgency, biological suitability, and financial cost to generate a mathematically optimal conservation plan for multiple species (e.g., Oryctolagus cuniculus, Martes martes) simultaneously.To handle the "chicken-and-egg" dependency between habitat shapes and corridor costs, the solution utilizes a Sequential Optimization Strategy, decomposing the problem into two distinct, high-precision stages.The Solution ArchitectureThe final pipeline operates as a Two-Stage Sequential Model powered by the CBC (Coin-OR Branch and Cut) solver to ensure strict binary decision-making and spatial coherence.Stage 1: Value-Driven Habitat Expansion (Iterative Frontier)The first stage determines the optimal expansion of habitats based on land suitability scores and conservation targets.Iterative Frontier Expansion: To prevent "island fragmentation," the model mimics organic biological growth. It iteratively selects optimal cells only from the valid frontier (immediate neighbors) of existing populations.Constraint Logic:Exclusivity: Cells are strictly allocated to a single species to maintain structural integrity.Predator-Prey Dynamics: Hard constraints prevent the expansion of predators (Martens) into cells adjacent to prey (Rabbits/Mice).Endangerment Multipliers: Expansion targets are weighted by urgency; highly endangered species receive high-priority multipliers (e.g., 5x expansion for Rabbits).Stage 2: Global Connectivity & Topology OptimizationOnce habitats are fixed, the second stage generates the most cost-effective network of ecological corridors to connect isolated population groups.One-to-Many Dijkstra Search: The model uses a modified graph-traversal algorithm to connect isolated habitat "islands" until a specific reduction in fragmentation is achieved.Shared Network Heuristic: To maximize cost-efficiency, the model incentivizes "wildlife highways." Once a corridor cell is built for one species, it becomes a zero-cost traversal zone for others.Permutation Optimization: To solve path dependency (where the order of species processing affects the cost), the system simulates all possible permutation orders (e.g., Rabbit $\rightarrow$ Marten vs. Marten $\rightarrow$ Rabbit) and selects the sequence that yields the lowest global cost.Ecological Safety Rules:Forbidden Zones: Corridors cannot be built over the existing habitats of other species.Adjacency Recognition: Zero-cost logic detects diagonally touching populations to prevent redundant bridge building.VisualizationThe project utilizes a custom rendering engine built on Shapely and Folium. To visualize multi-species density and co-habitation on a single grid, grid cells are geometrically sliced into horizontal "stripes," allowing distinct color codes (Blue/Rabbits, Black/Martens, etc.) to coexist visually within the master grid.
+# Ecological Habitat & Corridor Optimization Engine
+
+## Project Overview
+This project implements a spatial optimization pipeline designed to automate the expansion of animal habitats and the generation of ecological corridors. By integrating geospatial data processing with Mixed Integer Programming (MIP), the model balances conservation urgency, biological suitability, and financial cost to generate a mathematically optimal conservation plan for multiple species (e.g., *Oryctolagus cuniculus*, *Martes martes*) simultaneously.
+
+To address the computational interdependence between habitat configuration and corridor costs, the solution utilizes a **Sequential Optimization Strategy**, decomposing the problem into two distinct, high-precision stages.
+
+## The Solution Architecture
+
+The final pipeline operates as a **Two-Stage Sequential Model** powered by the **CBC (Coin-OR Branch and Cut)** solver to ensure strict binary decision-making and spatial coherence.
+
+### Stage 1: Value-Driven Habitat Expansion (Iterative Frontier)
+The first stage determines the optimal expansion of habitats based on land suitability scores and conservation targets.
+
+* **Iterative Frontier Expansion:** To prevent "island fragmentation," the model mimics organic biological growth. It iteratively selects optimal cells only from the "valid frontier" (immediate neighbors) of existing populations.
+* **MIP Solver (CBC):** The engine uses Mixed Integer Programming to enforce strict binary variables (`BoolVar`), preventing fractional or "fuzzy" expansion results.
+* **Constraint Logic:**
+    * **Exclusivity:** Cells are strictly allocated to a single species to maintain structural integrity.
+    * **Predator-Prey Dynamics:** Hard constraints prevent the expansion of predators (Martens) into cells adjacent to prey (Rabbits/Mice).
+    * **Endangerment Multipliers:** Expansion targets are weighted by urgency; highly endangered species receive high-priority multipliers (e.g., 5x expansion for Rabbits).
+
+### Stage 2: Global Connectivity & Topology Optimization
+Once habitats are fixed, the second stage generates the most cost-effective network of ecological corridors to connect isolated population groups.
+
+* **One-to-Many Dijkstra Search:** The model uses a modified graph-traversal algorithm to connect isolated habitat "islands" until a specific reduction in fragmentation is achieved.
+* **Shared Network Heuristic:** To maximize cost-efficiency, the model incentivizes "wildlife highways." Once a corridor cell is built for one species, it becomes a zero-cost traversal zone for others.
+* **Permutation Optimization:** To solve "Path Dependency" (where the order of species processing affects the global cost), the system simulates all possible permutation orders (e.g., Rabbit → Marten vs. Marten → Rabbit) and selects the sequence that yields the lowest global cost.
+* **Ecological Safety Rules:**
+    * **Forbidden Zones:** Corridors cannot be built over the existing habitats of other species.
+    * **Adjacency Recognition:** Zero-cost logic detects diagonally touching populations to prevent redundant bridge building.
+    * **Geometric Precision:** Logic enforces strict termination at habitat edges, preventing corridor overlap ("Landing Pad" fix).
+
+## Visualization Strategy
+The project utilizes a custom rendering engine built on **Shapely** and **Folium**. To visualize multi-species density and co-habitation on a single grid, grid cells are geometrically sliced into horizontal "stripes," allowing distinct color codes (Blue/Rabbits, Black/Martens, etc.) to coexist visually within the master grid while overlays highlight the corridor network.
